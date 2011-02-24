@@ -108,29 +108,6 @@ GREP_OPTIONS="--exclude-dir=\.svn --colour=always"
 export PYTHONPATH=/home/channam/Code/causal:/home/channam/Code/tontine/src
 
 
-# Show current SVN subfolder in prompt.
-      GREEN="\[\033[0;32m\]"
-LIGHT_GREEN="\[\033[1;32m\]"
-       GRAY="\[\033[1;30m\]"
- LIGHT_BLUE="\[\033[1;34m\]"
- LIGHT_GRAY="\[\033[0;37m\]"
-  COLOR_OFF="\[\e[0m\]"
-function prompt_func() {
-  branch_pattern="\* ([^$IFS]*)"
-  PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\W\[\033[00m\]'
-  if [[ -d "./.git" && "$(git branch --no-color 2> /dev/null)" =~ $branch_pattern ]]; then
-    branch="${BASH_REMATCH[1]}"
-    PS1+=" [$GREEN$branch$COLOR_OFF]"
-  elif [[ -d "./.svn" ]]; then
-    path_pattern="URL: ([^$IFS]*).*Repository Root: ([^$IFS]*).*Revision: ([0-9]*)"
-    if [[ "$(svn info 2> /dev/null)" =~ ${path_pattern} ]]; then
-      branch=`expr ${BASH_REMATCH[1]:\`expr match ${BASH_REMATCH[1]} ${BASH_REMATCH[2]}\`+1}`
-      revision="${BASH_REMATCH[3]}"
-      PS1+=" [$GREEN$branch$GRAY@$revision$COLOR_OFF]"
-    fi
-  fi
-  PS1+="$ "
-}
 PROMPT_COMMAND=prompt_func
 WORKON_HOME=/home/channam/Envs
 source /usr/local/bin/virtualenvwrapper.sh
@@ -138,3 +115,32 @@ export PIP_VIRTUALENV_BASE=$WORKON_HOME
 export PIP_RESPECT_VIRTUALENV=true
 
 export PATH=$PATH:/home/channam/Code/mongodb/bin:/home/channam/bin
+
+
+# Show current git branch or SVN subfolder in prompt.
+      GREEN="\[\033[0;32m\]"
+LIGHT_GREEN="\[\033[1;32m\]"
+       GRAY="\[\033[1;30m\]"
+ LIGHT_BLUE="\[\033[1;34m\]"
+ LIGHT_GRAY="\[\033[0;37m\]"
+  COLOR_OFF="\[\e[0m\]"
+function prompt_func() {
+  PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
+  
+  branch_pattern="\* ([^$IFS]*)"
+  if [[ -d "./.git" && "$(git branch --no-color 2> /dev/null)" =~ $branch_pattern ]]; then
+    branch="${BASH_REMATCH[1]}"
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]'
+    PS1+=":$GRAY$branch$LIGHT_GRAY@$revision$COLOR_OFF\$ "
+
+  elif [[ -d "./.svn" ]]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]'
+    path_pattern="URL: ([^$IFS]*).*Repository Root: ([^$IFS]*).*Revision: ([0-9]*)"
+    if [[ "$(svn info 2> /dev/null)" =~ ${path_pattern} ]]; then
+      branch=`/usr/bin/ruby -e 'print ARGV[0][ARGV[1].size + 1..-1] || "/"' ${BASH_REMATCH[1]} ${BASH_REMATCH[2]}`
+      revision="${BASH_REMATCH[3]}"
+      PS1+=":$GRAY$branch$LIGHT_GRAY@$revision$COLOR_OFF\$ "
+    fi
+  fi
+}
+PROMPT_COMMAND=prompt_func
