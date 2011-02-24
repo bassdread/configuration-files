@@ -139,7 +139,7 @@ function prompt_func() {
     if [[ "$(svn info 2> /dev/null)" =~ ${path_pattern} ]]; then
       branch=`/usr/bin/ruby -e 'print ARGV[0][ARGV[1].size + 1..-1] || "/"' ${BASH_REMATCH[1]} ${BASH_REMATCH[2]}`
       revision="${BASH_REMATCH[3]}"
-      PS1+=":$GRAY$branch$LIGHT_GRAY@$revision$COLOR_OFF\$ "
+      PS1+=":$LIGHT_GRAY@$revision$COLOR_OFF\$ "
     fi
   fi
 }
